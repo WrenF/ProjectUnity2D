@@ -7,6 +7,11 @@ public class MenuController : MonoBehaviour
     {
         SceneManager.LoadScene(sceneName);
     }
+
+    public void LoadCreditsScene()
+    {
+        SceneManager.LoadScene("Credits");
+    }
     
     public void Quit()
     {

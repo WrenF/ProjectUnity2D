@@ -9,12 +9,16 @@ public class PlayerController : MonoBehaviour
     
     public float moveSpeed = 5f;
     [FormerlySerializedAs("JumpForce")] public float jumpForce = 20f;
-    public float attackDamage = 1f;
+    //public float attackDamage = 1f;
     
     private Rigidbody2D _rigidbody;
     private Animator _animator;
-    private SpriteRenderer _spriteRenderer;
     private bool isGrounded;
+
+    public float attackRange = 1.5f;
+	public int damage = 1;
+	public SpriteRenderer _spriteRenderer;
+	
 
     void Start()
     {
@@ -36,6 +40,7 @@ public class PlayerController : MonoBehaviour
         _animator.SetFloat(Horizontal, Mathf.Abs(horizontal));
         _animator.SetBool(Jump, isJumping);
         
+        //Permet le regard du perso droite gauche
         if (horizontal > 0)
             _spriteRenderer.flipX = false;
         if (horizontal < 0)
@@ -48,6 +53,34 @@ public class PlayerController : MonoBehaviour
         {
             _rigidbody.AddForce(Vector2.up * jumpForce);
         }
+		if (isAttacking)
+		{
+			PerformAttack();
+		}
     }
-    
+	
+	void PerformAttack()
+    {
+        _animator.SetTrigger("Attack");
+		Vector2 attackDirection = _spriteRenderer.flipX ? Vector2.left : Vector2.right;
+		Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, attackRange);
+		foreach(Collider2D collider in hitColliders)
+		{
+			if(collider.CompareTag("Enemy"))
+			{
+				Vector2 directionToEnemy = (collider.transform.position - transform.position).normalized;
+	
+				if(Vector2.Dot(attackDirection, directionToEnemy) > 0)
+				{
+					EnemyController enemyScript = collider.GetComponent<EnemyController>();
+					enemyScript.TakeDamage(damage);
+				}
+			}
+		}
+    }
+	void OnDrawGizmosSelected()
+	{
+		Gizmos.color = Color.red;
+		Gizmos.DrawWireSphere(transform.position, attackRange);
+	}
 }
